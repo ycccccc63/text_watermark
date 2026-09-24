@@ -1,0 +1,40 @@
+name: Build Windows EXE
+
+# 觸發條件：當推送到 main 或 master 分支時自動執行，或在 GitHub 介面手動觸發
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    # 1. 切換至儲存庫程式碼
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # 2. 設定 Python 環境
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    # 3. 安裝 PyInstaller 與依賴套件
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller
+
+    # 4. 使用 PyInstaller 打包為 EXE
+    - name: Build EXE with PyInstaller
+      run: |
+        pyinstaller --noconsole --onefile text_watermark_gui.py
+
+    # 5. 上傳打包好的 EXE 檔為 Artifact (成果物)
+    - name: Upload Built EXE
+      uses: actions/upload-artifact@v4
+      with:
+        name: TextWatermarkApp-Windows
+        path: dist/*.exe
